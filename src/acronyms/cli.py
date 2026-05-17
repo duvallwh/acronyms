@@ -14,8 +14,20 @@ def main(argv: list[str] | None = None) -> int:
         description="Extract acronyms from a PDF using parenthesized uppercase terms like (AAA)."
     )
     parser.add_argument("pdf", type=Path, help="Path to the PDF file to scan.")
-    parser.add_argument("--json", action="store_true", help="Print results as JSON.")
-    parser.add_argument("--csv", type=Path, help="Write results to a CSV file.")
+    parser.add_argument(
+        "--json",
+        nargs="?",
+        const="",
+        metavar="PATH",
+        help="Write results as JSON. If PATH is omitted, use the PDF filename with .json. Use '-' to print JSON.",
+    )
+    parser.add_argument(
+        "--csv",
+        nargs="?",
+        const="",
+        metavar="PATH",
+        help="Write results to a CSV file. If PATH is omitted, use the PDF filename with .csv.",
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -24,15 +36,38 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Error: {error}", file=sys.stderr)
         return 1
 
-    if args.csv:
-        _write_csv(args.csv, results)
+    csv_path = _resolve_output_path(args.csv, args.pdf, ".csv") if args.csv is not None else None
+    json_path = _resolve_output_path(args.json, args.pdf, ".json") if args.json is not None else None
 
-    if args.json:
-        print(json.dumps([result.as_dict() for result in results], indent=2))
+    if csv_path is not None:
+        _write_csv(csv_path, results)
+        print(f"Wrote CSV to {csv_path}")
+
+    if args.json is not None:
+        json_text = json.dumps([result.as_dict() for result in results], indent=2)
+        if json_path is None:
+            print(json_text)
+        else:
+            _write_text(json_path, json_text)
+            print(f"Wrote JSON to {json_path}")
     else:
         _print_table(results)
 
     return 0
+
+
+def _resolve_output_path(requested_path: str, pdf_path: Path, suffix: str) -> Path | None:
+    if requested_path == "-":
+        return None
+
+    if requested_path:
+        return Path(requested_path)
+
+    return pdf_path.with_suffix(suffix)
+
+
+def _write_text(path: Path, text: str) -> None:
+    path.write_text(f"{text}\n", encoding="utf-8")
 
 
 def _write_csv(path: Path, results: list[AcronymResult]) -> None:

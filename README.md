@@ -34,13 +34,31 @@ Output includes each acronym, the first page where it appears, how many times it
 
 ## Output Formats
 
-Print JSON:
+Write JSON using the PDF filename:
 
 ```powershell
 python -m acronyms "path\to\file.pdf" --json
 ```
 
-Write CSV:
+Print JSON to the terminal:
+
+```powershell
+python -m acronyms "path\to\file.pdf" --json -
+```
+
+Write JSON to a specific file:
+
+```powershell
+python -m acronyms "path\to\file.pdf" --json acronyms.json
+```
+
+Write CSV using the PDF filename:
+
+```powershell
+python -m acronyms "path\to\file.pdf" --csv
+```
+
+Write CSV to a specific file:
 
 ```powershell
 python -m acronyms "path\to\file.pdf" --csv acronyms.csv
