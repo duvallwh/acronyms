@@ -8,7 +8,7 @@ from pypdf import PdfReader
 
 
 ACRONYM_RE = re.compile(r"\(([A-Z][A-Z0-9&./ -]{1,24}[A-Z0-9])\)")
-ACRONYM_WITH_DEFINITION_RE = re.compile(r"\b([A-Z][A-Z0-9&./ -]{1,24}[A-Z0-9])\s*\(([^()]{3,250})\)")
+ACRONYM_WITH_DEFINITION_RE = re.compile(r"\b([A-Z][A-Z0-9&./-]{1,24}[A-Z0-9])\s*\(([^()]{3,250})\)")
 WORD_RE = re.compile(r"[A-Za-z][A-Za-z0-9'-]*")
 CONNECTOR_WORDS = {"a", "an", "and", "for", "in", "of", "on", "or", "the", "to"}
 
@@ -56,10 +56,10 @@ def find_acronyms(page_text: list[tuple[int, str]]) -> list[AcronymResult]:
         normalized_text = _normalize_whitespace(text)
         for match in ACRONYM_WITH_DEFINITION_RE.finditer(normalized_text):
             acronym = _normalize_acronym(match.group(1))
-            if not _looks_like_acronym(acronym):
+            definition = _normalize_definition(match.group(2))
+            if not _looks_like_acronym(acronym) or not _looks_like_reverse_definition(definition):
                 continue
 
-            definition = _normalize_definition(match.group(2))
             result = _record_acronym(results, acronym, page_number, normalized_text, match.start(), match.end())
             if result.definition is None:
                 result.definition = definition
@@ -69,9 +69,13 @@ def find_acronyms(page_text: list[tuple[int, str]]) -> list[AcronymResult]:
             if not _looks_like_acronym(acronym):
                 continue
 
+            definition = _guess_definition(normalized_text[: match.start()], acronym)
+            if not _should_keep_parenthesized_acronym(acronym, definition, normalized_text, match.start(), match.end()):
+                continue
+
             result = _record_acronym(results, acronym, page_number, normalized_text, match.start(), match.end())
             if result.definition is None:
-                result.definition = _guess_definition(normalized_text[: match.start()], acronym)
+                result.definition = definition
 
     return sorted(results.values(), key=lambda item: item.acronym)
 
@@ -110,6 +114,71 @@ def _record_acronym(
 def _looks_like_acronym(value: str) -> bool:
     letters = [character for character in value if character.isalpha()]
     return len(letters) >= 2 and all(character.upper() == character for character in letters)
+
+
+def _looks_like_definition(value: str) -> bool:
+    words = WORD_RE.findall(value)
+    if not words:
+        return False
+
+    return any(character.islower() for character in value)
+
+
+def _looks_like_reverse_definition(value: str) -> bool:
+    if not _looks_like_definition(value):
+        return False
+
+    if re.search(r"[=<>]", value) or "/g" in value:
+        return False
+
+    words = WORD_RE.findall(value)
+    if len(words) == 1:
+        word = words[0]
+        return len(word) > 3 and not word.islower()
+
+    return True
+
+
+def _should_keep_parenthesized_acronym(
+    acronym: str,
+    definition: str | None,
+    text: str,
+    start: int,
+    end: int,
+) -> bool:
+    if end < len(text) and text[end].isalnum():
+        return False
+
+    tokens = acronym.split()
+    if len(tokens) > 2:
+        return False
+
+    if len(tokens) == 2 and any(len(token) == 1 for token in tokens if token.isalpha()):
+        return False
+
+    if definition:
+        return True
+
+    if " " in acronym:
+        return False
+
+    if len(acronym) > 10:
+        return False
+
+    if acronym.isalpha() and len(acronym) > 5:
+        return False
+
+    return not _is_uppercase_label_context(text, start, end)
+
+
+def _is_uppercase_label_context(text: str, start: int, end: int, radius: int = 80) -> bool:
+    context = text[max(0, start - radius) : min(len(text), end + radius)]
+    letters = [character for character in context if character.isalpha()]
+    if len(letters) < 12:
+        return False
+
+    uppercase = sum(1 for character in letters if character.isupper())
+    return uppercase / len(letters) >= 0.75
 
 
 def _context_around(text: str, start: int, end: int, radius: int = 80) -> str:
