@@ -9,6 +9,8 @@ import sys
 
 from .extractor import AcronymResult, extract_acronyms_from_pdf
 
+COMPACT_OUTPUT_BREAKPOINT = 100
+
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
@@ -91,7 +93,7 @@ def _print_table(results: list[AcronymResult], terminal_width: int | None = None
         return
 
     width = terminal_width if terminal_width is not None else shutil.get_terminal_size(fallback=(120, 24)).columns
-    if width < 100:
+    if width < COMPACT_OUTPUT_BREAKPOINT:
         _print_compact(results)
         return
 

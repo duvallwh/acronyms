@@ -57,6 +57,13 @@ class PrintTableTests(unittest.TestCase):
         self.assertIn("  Definition: National Aeronautics and Space Administration", rendered)
         self.assertIn("  Pages: 1, 3", rendered)
 
+    def test_compact_output_shows_first_page_from_min_page(self):
+        output = StringIO()
+        with redirect_stdout(output):
+            _print_table([AcronymResult(acronym="NOAA", count=2, pages={4, 9})], terminal_width=60)
+
+        self.assertIn("NOAA (count=2, first_page=4)", output.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()
