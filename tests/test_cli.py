@@ -35,7 +35,10 @@ class PrintTableTests(unittest.TestCase):
     def test_uses_tabular_output_for_wide_terminal(self):
         output = StringIO()
         with redirect_stdout(output):
-            _print_table([AcronymResult(acronym="NASA", count=1, pages={1}, definition="National Aeronautics Space Administration")], terminal_width=120)
+            _print_table(
+                [AcronymResult(acronym="NASA", count=1, pages={1}, definition="National Aeronautics and Space Administration")],
+                terminal_width=120,
+            )
 
         rendered = output.getvalue()
         self.assertIn("Acronym", rendered)
@@ -44,11 +47,14 @@ class PrintTableTests(unittest.TestCase):
     def test_uses_compact_output_for_narrow_terminal(self):
         output = StringIO()
         with redirect_stdout(output):
-            _print_table([AcronymResult(acronym="NASA", count=2, pages={1, 3}, definition="National Aeronautics Space Administration")], terminal_width=60)
+            _print_table(
+                [AcronymResult(acronym="NASA", count=2, pages={1, 3}, definition="National Aeronautics and Space Administration")],
+                terminal_width=60,
+            )
 
         rendered = output.getvalue()
         self.assertIn("NASA (count=2, first_page=1)", rendered)
-        self.assertIn("  Definition: National Aeronautics Space Administration", rendered)
+        self.assertIn("  Definition: National Aeronautics and Space Administration", rendered)
         self.assertIn("  Pages: 1, 3", rendered)
 
 

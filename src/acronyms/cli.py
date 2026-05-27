@@ -123,7 +123,10 @@ def _format_row(row: tuple[str, ...], widths: list[int]) -> str:
 
 def _print_compact(results: list[AcronymResult]) -> None:
     for index, result in enumerate(results):
-        print(f"{result.acronym} (count={result.count}, first_page={result.first_page or ''})")
+        summary_parts = [f"count={result.count}"]
+        if result.first_page is not None:
+            summary_parts.append(f"first_page={result.first_page}")
+        print(f"{result.acronym} ({', '.join(summary_parts)})")
         if result.definition:
             print(f"  Definition: {result.definition}")
         print(f"  Pages: {', '.join(str(page) for page in sorted(result.pages))}")
