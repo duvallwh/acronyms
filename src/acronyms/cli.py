@@ -4,6 +4,7 @@ import argparse
 import csv
 import json
 from pathlib import Path
+import shutil
 import sys
 
 from .extractor import AcronymResult, extract_acronyms_from_pdf
@@ -84,9 +85,14 @@ def _write_csv(path: Path, results: list[AcronymResult]) -> None:
             writer.writerow(row)
 
 
-def _print_table(results: list[AcronymResult]) -> None:
+def _print_table(results: list[AcronymResult], terminal_width: int | None = None) -> None:
     if not results:
         print("No acronyms found.")
+        return
+
+    width = terminal_width if terminal_width is not None else shutil.get_terminal_size(fallback=(120, 24)).columns
+    if width < 100:
+        _print_compact(results)
         return
 
     rows = [
@@ -113,3 +119,13 @@ def _print_table(results: list[AcronymResult]) -> None:
 
 def _format_row(row: tuple[str, ...], widths: list[int]) -> str:
     return "  ".join(value.ljust(widths[index]) for index, value in enumerate(row))
+
+
+def _print_compact(results: list[AcronymResult]) -> None:
+    for index, result in enumerate(results):
+        print(f"{result.acronym} (count={result.count}, first_page={result.first_page or ''})")
+        if result.definition:
+            print(f"  Definition: {result.definition}")
+        print(f"  Pages: {', '.join(str(page) for page in sorted(result.pages))}")
+        if index != len(results) - 1:
+            print()
