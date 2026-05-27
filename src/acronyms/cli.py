@@ -4,9 +4,12 @@ import argparse
 import csv
 import json
 from pathlib import Path
+import shutil
 import sys
 
 from .extractor import AcronymResult, extract_acronyms_from_pdf
+
+COMPACT_OUTPUT_BREAKPOINT = 100
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -84,9 +87,14 @@ def _write_csv(path: Path, results: list[AcronymResult]) -> None:
             writer.writerow(row)
 
 
-def _print_table(results: list[AcronymResult]) -> None:
+def _print_table(results: list[AcronymResult], terminal_width: int | None = None) -> None:
     if not results:
         print("No acronyms found.")
+        return
+
+    width = terminal_width if terminal_width is not None else shutil.get_terminal_size(fallback=(120, 24)).columns
+    if width < COMPACT_OUTPUT_BREAKPOINT:
+        _print_compact(results)
         return
 
     rows = [
@@ -113,3 +121,16 @@ def _print_table(results: list[AcronymResult]) -> None:
 
 def _format_row(row: tuple[str, ...], widths: list[int]) -> str:
     return "  ".join(value.ljust(widths[index]) for index, value in enumerate(row))
+
+
+def _print_compact(results: list[AcronymResult]) -> None:
+    for index, result in enumerate(results):
+        summary_parts = [f"count={result.count}"]
+        if result.first_page is not None:
+            summary_parts.append(f"first_page={result.first_page}")
+        print(f"{result.acronym} ({', '.join(summary_parts)})")
+        if result.definition:
+            print(f"  Definition: {result.definition}")
+        print(f"  Pages: {', '.join(str(page) for page in sorted(result.pages))}")
+        if index != len(results) - 1:
+            print()
