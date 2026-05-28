@@ -22,7 +22,7 @@ Start the API server:
 python -m acronyms.web
 ```
 
-The API exposes `POST /api/extract` and expects a multipart upload named `file` containing a PDF.
+The API exposes `POST /api/extract` and expects a multipart upload named `file` containing a PDF. Set `ACRONYMS_HOST` and `ACRONYMS_PORT` if you need the server to listen on a different interface or port.
 
 ## Frontend setup
 

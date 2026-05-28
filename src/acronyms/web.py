@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -61,7 +62,9 @@ def _is_pdf_upload(file: UploadFile) -> bool:
 
 
 def main() -> int:
-    uvicorn.run("acronyms.web:create_app", factory=True, host="127.0.0.1", port=8000)
+    host = os.environ.get("ACRONYMS_HOST", "127.0.0.1")
+    port = int(os.environ.get("ACRONYMS_PORT", "8000"))
+    uvicorn.run("acronyms.web:create_app", factory=True, host=host, port=port)
     return 0
 
 
