@@ -90,7 +90,7 @@ describe('App', () => {
       json: vi.fn().mockResolvedValue({ detail: 'Please upload a PDF file.' }),
     })
 
-    const user = userEvent.setup()
+    const user = userEvent.setup({ applyAccept: false })
     render(<App />)
 
     await user.upload(screen.getByLabelText(/choose a pdf/i), new File(['oops'], 'notes.txt', { type: 'text/plain' }))
