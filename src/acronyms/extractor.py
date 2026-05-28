@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from io import BytesIO
 from pathlib import Path
 import re
 
@@ -41,7 +42,14 @@ def extract_acronyms_from_pdf(pdf_path: str | Path) -> list[AcronymResult]:
     if not path.exists():
         raise FileNotFoundError(f"PDF not found: {path}")
 
-    reader = PdfReader(path)
+    return _extract_acronyms_from_reader(PdfReader(path))
+
+
+def extract_acronyms_from_pdf_bytes(pdf_bytes: bytes) -> list[AcronymResult]:
+    return _extract_acronyms_from_reader(PdfReader(BytesIO(pdf_bytes)))
+
+
+def _extract_acronyms_from_reader(reader: PdfReader) -> list[AcronymResult]:
     page_text = []
     for page_number, page in enumerate(reader.pages, start=1):
         page_text.append((page_number, page.extract_text() or ""))

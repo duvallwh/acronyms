@@ -1,65 +1,73 @@
 # Acronym Extractor
 
-This program loads a PDF file, extracts its text, and finds acronyms introduced with parenthesized terms. It supports both `Definition (AAA)` and `AAA (definition)` patterns, including examples like `(NASA)`, `(SOC 2)`, and `PRISMA (PRecipitation Inference...)`.
+This project now includes a React frontend backed by the existing Python PDF acronym extractor. You can still use the CLI, but the primary interface is a web app for uploading PDFs, reviewing results, filtering acronyms, and exporting JSON or CSV.
 
-## Setup
+## Components
 
-Install the project dependency:
+- **Python API and extractor** in `/tmp/workspace/duvallwh/acronyms/src/acronyms`
+- **React frontend** in `/tmp/workspace/duvallwh/acronyms/frontend`
+- **CLI** in `/tmp/workspace/duvallwh/acronyms/src/acronyms/cli.py`
 
-```powershell
+## Backend setup
+
+Install the package in editable mode:
+
+```bash
 python -m pip install -e .
 ```
 
-If you use `uv`, this also works:
+Start the API server:
 
-```powershell
-uv pip install -e .
+```bash
+python -m acronyms.web
 ```
 
-## Usage
+The API exposes `POST /api/extract` and expects a multipart upload named `file` containing a PDF.
+
+## Frontend setup
+
+Install frontend dependencies and start the React dev server:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The Vite dev server proxies API requests to `http://127.0.0.1:8000`, so run the backend and frontend in separate terminals during local development.
+
+## CLI usage
 
 Run the extractor with a PDF path:
 
-```powershell
-python -m acronyms "path\to\file.pdf"
+```bash
+python -m acronyms "path/to/file.pdf"
 ```
-
-Or, after installing the project, use the script command:
-
-```powershell
-acronyms "path\to\file.pdf"
-```
-
-Output includes each acronym, the first page where it appears, how many times it was found, and a best-effort definition.
-
-## Output Formats
 
 Write JSON using the PDF filename:
 
-```powershell
-python -m acronyms "path\to\file.pdf" --json
-```
-
-Print JSON to the terminal:
-
-```powershell
-python -m acronyms "path\to\file.pdf" --json -
-```
-
-Write JSON to a specific file:
-
-```powershell
-python -m acronyms "path\to\file.pdf" --json acronyms.json
+```bash
+python -m acronyms "path/to/file.pdf" --json
 ```
 
 Write CSV using the PDF filename:
 
-```powershell
-python -m acronyms "path\to\file.pdf" --csv
+```bash
+python -m acronyms "path/to/file.pdf" --csv
 ```
 
-Write CSV to a specific file:
+## Testing
 
-```powershell
-python -m acronyms "path\to\file.pdf" --csv acronyms.csv
+Backend tests:
+
+```bash
+python -m unittest discover -s tests
+```
+
+Frontend tests and build:
+
+```bash
+cd frontend
+npm test
+npm run build
 ```

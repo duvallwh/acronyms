@@ -5,11 +5,15 @@ description = "Extract acronyms from PDF files using parenthesized uppercase ter
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "fastapi>=0.115.0",
     "pypdf>=5.0.0",
+    "python-multipart>=0.0.9",
+    "uvicorn>=0.30.0",
 ]
 
 [project.scripts]
 acronyms = "acronyms.cli:main"
+acronyms-web = "acronyms.web:main"
 
 [build-system]
 requires = ["hatchling"]
