@@ -4,9 +4,9 @@ This project now includes a React frontend backed by the existing Python PDF acr
 
 ## Components
 
-- **Python API and extractor** in `/tmp/workspace/duvallwh/acronyms/src/acronyms`
-- **React frontend** in `/tmp/workspace/duvallwh/acronyms/frontend`
-- **CLI** in `/tmp/workspace/duvallwh/acronyms/src/acronyms/cli.py`
+- **Python API and extractor** in `src/acronyms`
+- **React frontend** in `frontend`
+- **CLI** in `src/acronyms/cli.py`
 
 ## Backend setup
 

@@ -57,7 +57,7 @@ def _is_pdf_upload(file: UploadFile) -> bool:
     if content_type in {"application/pdf", "application/x-pdf"}:
         return True
 
-    return file.filename.lower().endswith(".pdf")
+    return bool(file.filename) and file.filename.lower().endswith(".pdf")
 
 
 def main() -> int:
