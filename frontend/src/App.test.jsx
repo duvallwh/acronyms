@@ -1,6 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 import { downloadResultsAsCsv, downloadResultsAsJson } from './exportResults'
 
@@ -26,7 +26,7 @@ const sampleResults = [
 
 describe('App', () => {
   beforeEach(() => {
-    vi.restoreAllMocks()
+    vi.clearAllMocks()
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
@@ -34,6 +34,11 @@ describe('App', () => {
         json: vi.fn().mockResolvedValue(sampleResults),
       }),
     )
+  })
+
+  afterEach(() => {
+    cleanup()
+    vi.unstubAllGlobals()
   })
 
   it('uploads a PDF and renders extracted results', async () => {
