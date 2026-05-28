@@ -1,6 +1,7 @@
 import unittest
+from unittest.mock import patch
 
-from acronyms.extractor import find_acronyms
+from acronyms.extractor import extract_acronyms_from_pdf_bytes, find_acronyms
 
 
 class FindAcronymsTests(unittest.TestCase):
@@ -64,6 +65,29 @@ class FindAcronymsTests(unittest.TestCase):
         text = "SINGLE SPIRAL RINGS GRID TILE (CERAMIC) CHECKER BRICK"
 
         self.assertEqual(find_acronyms([(1, text)]), [])
+
+
+class ExtractPdfBytesTests(unittest.TestCase):
+    @patch('acronyms.extractor.find_acronyms')
+    @patch('acronyms.extractor.PdfReader')
+    def test_extracts_acronyms_from_pdf_bytes(self, pdf_reader_mock, find_acronyms_mock):
+        page = type('Page', (), {'extract_text': lambda self: 'National Aeronautics and Space Administration (NASA)'})()
+        pdf_reader_mock.return_value.pages = [page]
+        find_acronyms_mock.return_value = ['sentinel']
+
+        results = extract_acronyms_from_pdf_bytes(b'%PDF-1.4 sample')
+
+        self.assertEqual(results, ['sentinel'])
+        pdf_reader_mock.assert_called_once()
+        stream = pdf_reader_mock.call_args.args[0]
+        self.assertEqual(stream.read(), b'%PDF-1.4 sample')
+        find_acronyms_mock.assert_called_once_with(
+            [(1, 'National Aeronautics and Space Administration (NASA)')]
+        )
+
+    def test_raises_for_invalid_pdf_bytes(self):
+        with self.assertRaises(Exception):
+            extract_acronyms_from_pdf_bytes(b'not a pdf')
 
 
 if __name__ == "__main__":

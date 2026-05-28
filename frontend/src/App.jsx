@@ -182,8 +182,8 @@ function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredResults.map((result, index) => (
-                        <tr key={`${result.acronym}-${index}`}>
+                      {filteredResults.map((result) => (
+                        <tr key={`${result.acronym}-${result.first_page ?? 'none'}-${result.pages.join('-')}-${result.definition ?? 'none'}`}>
                           <td>{result.acronym}</td>
                           <td>{result.definition || '—'}</td>
                           <td>{result.count}</td>
@@ -196,8 +196,11 @@ function App() {
                   </table>
                 </div>
                 <div className="result-cards" aria-label="Mobile results">
-                  {filteredResults.map((result, index) => (
-                    <article className="result-card" key={`${result.acronym}-card-${index}`}>
+                  {filteredResults.map((result) => (
+                    <article
+                      className="result-card"
+                      key={`${result.acronym}-card-${result.first_page ?? 'none'}-${result.pages.join('-')}-${result.definition ?? 'none'}`}
+                    >
                       <div className="card-heading">
                         <h3>{result.acronym}</h3>
                         <span>{result.count} matches</span>
